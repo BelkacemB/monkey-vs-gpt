@@ -5,7 +5,7 @@ from datetime import datetime
 @dataclass
 class Instrument:
     symbol: str
-    name: str
+    name: Optional[str] = None
 
     def __eq__(self, other):
         if isinstance(other, Instrument):
@@ -28,8 +28,6 @@ class Position:
     quantity: int
     price: float
 
-
-
 class Portfolio:
     positions: List[Position]
     balance: float
@@ -39,6 +37,7 @@ class Portfolio:
         self.balance = balance or 10000
 
     def add(self, trade: Trade):
+        print(f"Adding trade to portfolio: {trade}")
         trade_cost = trade.price * trade.quantity
 
         # Check if there is enough cash for the trade
@@ -58,6 +57,7 @@ class Portfolio:
 
         self.positions.append(Position(instrument=trade.instrument, quantity=trade.quantity, price=trade.price))
         self.balance -= trade_cost
+        print(f"Added trade to portfolio: {trade}")
 
     def __str__(self):
         return '\n'.join([f'{position.instrument.symbol}: {position.quantity} @ {position.price:.2f}' for position in self.positions])

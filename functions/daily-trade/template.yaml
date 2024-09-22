@@ -3,16 +3,16 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   daily-trade
 
-  Sample SAM Template for daily-trade
+  SAM Template for daily trading comparison between ChatGPT and Monkey traders
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
-    MemorySize: 128
+    Timeout: 300
+    MemorySize: 256
 
 Resources:
-  HelloWorldFunction:
+  DailyTradeFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: src/
@@ -21,22 +21,45 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        DailySchedule:
+          Type: Schedule
           Properties:
-            Path: /hello
-            Method: get
+            Schedule: cron(0 0 * * ? *)
+            Name: DailyTradeSchedule
+            Description: Trigger the daily trade comparison function every day at midnight UTC
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - CloudWatchLogsFullAccess
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TradingTable
+      Environment:
+        Variables:
+          OPENAI_API_KEY: !Ref OpenAIApiKey
+          TRADING_TABLE_NAME: !Ref TradingTableName
+
+  TradingTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: TradingTable
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
 
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  DailyTradeFunction:
+    Description: "Daily Trade Lambda Function ARN"
+    Value: !GetAtt DailyTradeFunction.Arn
+  DailyTradeFunctionIamRole:
+    Description: "Implicit IAM Role created for Daily Trade function"
+    Value: !GetAtt DailyTradeFunctionRole.Arn
+  TradingTableName:
+    Description: "Name of the DynamoDB table"
+    Value: !Ref TradingTable

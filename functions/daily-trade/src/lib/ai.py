@@ -1,11 +1,9 @@
 from openai import OpenAI
-from dotenv import load_dotenv
 import os
-from .fin import Market, Portfolio, Trade
+from .fin import Market, Portfolio, Trade, Instrument
 import json
 from typing import Optional
 
-load_dotenv()
 API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=API_KEY)
 
@@ -42,8 +40,10 @@ def generate_ai_trade(market: Market, portfolio: Portfolio) -> Optional[Trade]:
         }
     )
 
-    trade_data = json.loads(response['choices'][0]['message']['content'])
-    if trade_data:
-        return Trade(symbol=trade_data['symbol'], quantity=trade_data['action'], explanation=trade_data['explanation'])
+    # Access the response correctly
+    trade_data = json.loads(response.choices[0].message.content)
+    print("generated_trade", trade_data)
+    if trade_data and trade_data['symbol'] in market.prices.keys():
+        return Trade(instrument=Instrument(symbol=trade_data['symbol']), quantity=trade_data['action'], explanation=trade_data['explanation'], price=market.prices[trade_data['symbol']])
     else:
         return None

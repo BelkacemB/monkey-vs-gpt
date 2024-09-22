@@ -32,5 +32,5 @@ def load_latest_news(tickers: List[str]) -> List[str]:
 
 
 def get_index_constituents() -> List[str]:
-    df = pd.read_csv('src/data/constituents.csv')
+    df = pd.read_csv('data/constituents.csv')
     return df['Symbol'].tolist()

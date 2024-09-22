@@ -25,7 +25,6 @@ class Trader(ABC):
         pass
 
 
-# Implement the monkey trader that buys a random stock below the trade_value_limit
 class MonkeyTrader(Trader):
     def __init__(self, market, portfolio):
         super().__init__(market, portfolio)
@@ -33,22 +32,24 @@ class MonkeyTrader(Trader):
 
     def generate_trade(self) -> Optional[Trade]:
         action = self._choose_action()
-
-        if action == Action.BUY.value:
+        print("Monkey trader is planning to " + action.value)
+        if action.value == Action.BUY.value:
             return self._generate_buy_trade()
-        elif action == Action.SELL.value:
+        elif action.value == Action.SELL.value:
             return self._generate_sell_trade()
         else:
             return None
 
     def _choose_action(self) -> Action:
-        if not self.portfolio.positions:
+        if not self.portfolio.positions or len(self.portfolio.positions) == 0:
+            print("No positions in Portfolio, defaulting to BUY")
             return Action.BUY
         return random.choice(self.possible_actions)
 
     def _generate_buy_trade(self) -> Trade:
         instrument = self._choose_random_instrument()
         price = self.market.prices[instrument.symbol]
+        print("Monkey trader is planning to buy " + instrument.symbol + " at " + str(price))
         return Trade(instrument=instrument, quantity=1, price=price)
 
     def _generate_sell_trade(self) -> Optional[Trade]:
