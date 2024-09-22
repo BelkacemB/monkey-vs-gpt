@@ -110,8 +110,8 @@ def save_portfolio(trader_type: str, portfolio: Portfolio):
         Item={
             'PK': f'PORTFOLIO#{trader_type.upper()}',
             'SK': 'LATEST',
-            'balance': Decimal(portfolio.balance),  # Convert to Decimal
-            'positions': [{'symbol': p.instrument.symbol, 'name': p.instrument.name, 'quantity': p.quantity, 'price': Decimal(p.price)} for p in portfolio.positions]  # Convert price to Decimal
+            'balance': Decimal(str(portfolio.balance)),
+            'positions': [{'symbol': p.instrument.symbol, 'name': p.instrument.name, 'quantity': p.quantity, 'price': Decimal(str(p.price))} for p in portfolio.positions]
         }
     )
 

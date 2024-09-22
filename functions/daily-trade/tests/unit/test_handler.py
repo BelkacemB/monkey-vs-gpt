@@ -1,72 +1,79 @@
 import json
-
 import pytest
-
+from unittest.mock import patch, MagicMock
 from src import app
+from src.lib.fin import Portfolio, Market, Trade, Instrument
+from datetime import datetime
 
+@pytest.fixture
+def mock_market():
+    return Market(
+        date=datetime(2023, 4, 1),
+        prices={'AAPL': 150.0, 'GOOGL': 2000.0}
+    )
 
-@pytest.fixture()
-def apigw_event():
-    """ Generates API GW Event"""
+@pytest.fixture
+def mock_portfolio():
+    return Portfolio(
+        positions=[],
+        balance=10000.0
+    )
 
-    return {
-        "body": '{ "test": "body"}',
-        "resource": "/{proxy+}",
-        "requestContext": {
-            "resourceId": "123456",
-            "apiId": "1234567890",
-            "resourcePath": "/{proxy+}",
-            "httpMethod": "POST",
-            "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
-            "accountId": "123456789012",
-            "identity": {
-                "apiKey": "",
-                "userArn": "",
-                "cognitoAuthenticationType": "",
-                "caller": "",
-                "userAgent": "Custom User Agent String",
-                "user": "",
-                "cognitoIdentityPoolId": "",
-                "cognitoIdentityId": "",
-                "cognitoAuthenticationProvider": "",
-                "sourceIp": "127.0.0.1",
-                "accountId": "",
-            },
-            "stage": "prod",
-        },
-        "queryStringParameters": {"foo": "bar"},
-        "headers": {
-            "Via": "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)",
-            "Accept-Language": "en-US,en;q=0.8",
-            "CloudFront-Is-Desktop-Viewer": "true",
-            "CloudFront-Is-SmartTV-Viewer": "false",
-            "CloudFront-Is-Mobile-Viewer": "false",
-            "X-Forwarded-For": "127.0.0.1, 127.0.0.2",
-            "CloudFront-Viewer-Country": "US",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Upgrade-Insecure-Requests": "1",
-            "X-Forwarded-Port": "443",
-            "Host": "1234567890.execute-api.us-east-1.amazonaws.com",
-            "X-Forwarded-Proto": "https",
-            "X-Amz-Cf-Id": "aaaaaaaaaae3VYQb9jd-nvCd-de396Uhbp027Y2JvkCPNLmGJHqlaA==",
-            "CloudFront-Is-Tablet-Viewer": "false",
-            "Cache-Control": "max-age=0",
-            "User-Agent": "Custom User Agent String",
-            "CloudFront-Forwarded-Proto": "https",
-            "Accept-Encoding": "gzip, deflate, sdch",
-        },
-        "pathParameters": {"proxy": "/examplepath"},
-        "httpMethod": "POST",
-        "stageVariables": {"baz": "qux"},
-        "path": "/examplepath",
-    }
+@pytest.fixture
+def mock_trade():
+    return Trade(
+        instrument=Instrument('AAPL', 'Apple Inc.'),
+        quantity=10,
+        price=150.0,
+        explanation="Test trade"
+    )
 
+@patch('src.app.load_market_data')
+@patch('src.app.load_portfolio')
+@patch('src.app.ChatGPTTrader')
+@patch('src.app.MonkeyTrader')
+@patch('src.app.save_trade')
+@patch('src.app.save_portfolio_valuation')
+@patch('src.app.save_portfolio')
+def test_lambda_handler(mock_save_portfolio, mock_save_portfolio_valuation, 
+                        mock_save_trade, MockMonkeyTrader, MockChatGPTTrader, 
+                        mock_load_portfolio, mock_load_market_data, 
+                        mock_market, mock_portfolio, mock_trade):
+    
+    # Set up mocks
+    mock_load_market_data.return_value = mock_market
+    mock_load_portfolio.return_value = mock_portfolio
+    
+    mock_chatgpt_trader = MockChatGPTTrader.return_value
+    mock_chatgpt_trader.generate_trade.return_value = mock_trade
+    
+    mock_monkey_trader = MockMonkeyTrader.return_value
+    mock_monkey_trader.generate_trade.return_value = None  # No trade for monkey
 
-def test_lambda_handler(apigw_event):
+    # Call the lambda handler
+    result = app.lambda_handler({}, {})
 
-    ret = app.lambda_handler(apigw_event, "")
-    data = json.loads(ret["body"])
+    # Assert the result
+    assert result['statusCode'] == 200
+    body = json.loads(result['body'])
+    assert 'date' in body
+    assert 'chatgpt_portfolio' in body
+    assert 'monkey_portfolio' in body
 
-    assert ret["statusCode"] == 200
-    assert "message" in ret["body"]
-    assert data["message"] == "hello world"
+    # Check ChatGPT portfolio
+    assert body['chatgpt_portfolio']['value'] == 11500.0  # 10000 + (10 * 150)
+    assert body['chatgpt_portfolio']['trade'] == str(mock_trade)
+
+    # Check Monkey portfolio
+    assert body['monkey_portfolio']['value'] == 10000.0
+    assert body['monkey_portfolio']['trade'] == "No trade"
+
+    # Verify function calls
+    mock_load_market_data.assert_called_once()
+    mock_load_portfolio.assert_called_with('chatgpt')
+    mock_load_portfolio.assert_called_with('monkey')
+    mock_save_trade.assert_called_once_with('chatgpt', mock_trade, mock_market.date)
+    mock_save_portfolio_valuation.assert_called_with('chatgpt', 11500.0, mock_market.date)
+    mock_save_portfolio_valuation.assert_called_with('monkey', 10000.0, mock_market.date)
+    mock_save_portfolio.assert_called_with('chatgpt', mock_portfolio)
+    mock_save_portfolio.assert_called_with('monkey', mock_portfolio)

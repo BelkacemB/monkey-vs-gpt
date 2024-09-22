@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 from datetime import datetime
+from decimal import Decimal
 
 @dataclass
 class Instrument:
@@ -38,10 +39,10 @@ class Portfolio:
 
     def add(self, trade: Trade):
         print(f"Adding trade to portfolio: {trade}")
-        trade_cost = trade.price * trade.quantity
+        trade_cost = Decimal(trade.price) * Decimal(trade.quantity)  # Convert to Decimal
 
         # Check if there is enough cash for the trade
-        if trade_cost > self.balance:
+        if trade_cost > Decimal(self.balance):  # Convert balance to Decimal
             raise ValueError("Insufficient cash for the trade")
 
         for position in self.positions:
@@ -50,7 +51,7 @@ class Portfolio:
                 if total_quantity == 0:
                     self.positions.remove(position)
                 else:
-                    position.price = (position.price * position.quantity + trade.price * trade.quantity) / total_quantity
+                    position.price = (Decimal(position.price) * Decimal(position.quantity) + Decimal(trade.price) * Decimal(trade.quantity)) / Decimal(total_quantity)  # Convert to Decimal
                     position.quantity = total_quantity
                 self.balance -= trade_cost
                 return
@@ -71,3 +72,4 @@ class Market:
     prices: dict
     news: List[str] = field(default_factory=list)
     date: datetime = datetime.now()
+    names: dict = field(default_factory=dict)

@@ -13,11 +13,11 @@ def load_market_data() -> Market:
     # Load prices & news
     prices = load_latest_prices(tickers)
     news = load_latest_news(tickers)
+    names = load_stock_names(tickers)  # New function to load stock names
 
-    market = Market(prices=prices, news=news, date=datetime.now())
+    market = Market(prices=prices, news=news, date=datetime.now(), names=names)
     logging.info(f"Market data loaded in {time.time() - start_time:.2f} seconds")
     return market
-
 
 def load_latest_prices(tickers: List[str]) -> dict:
     data = yf.download(tickers, period='1d')
@@ -30,7 +30,10 @@ def load_latest_news(tickers: List[str]) -> List[str]:
     index = yf.Ticker("^GSPC")
     return [article['title'] for article in index.news]
 
-
 def get_index_constituents() -> List[str]:
     df = pd.read_csv('data/constituents.csv')
     return df['Symbol'].tolist()
+
+def load_stock_names(tickers: List[str]) -> dict:
+    df = pd.read_csv('data/constituents.csv')
+    return dict(zip(df['Symbol'], df['Security']))
