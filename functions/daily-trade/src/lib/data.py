@@ -1,5 +1,5 @@
 import yfinance as yf
-from fin import Market
+from .fin import Market
 import pandas as pd
 from typing import List
 import logging
