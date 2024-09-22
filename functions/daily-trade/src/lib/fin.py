@@ -28,33 +28,36 @@ class Position:
     quantity: int
     price: float
 
-@dataclass
+
+
 class Portfolio:
-    positions: List[Position] = field(default_factory=list)
-    balance: float = 10000
+    positions: List[Position]
+    balance: float
 
-    class Portfolio:
-        def __init__(self):
-            self.positions = []
-            self.balance = 10000  # Initial cash balance, adjust as needed
+    def __init__(self, positions=None, balance=None):
+        self.positions = positions or []
+        self.balance = balance or 10000
 
-        def add(self, trade: Trade):
-            trade_cost = trade.price * trade.quantity
+    def add(self, trade: Trade):
+        trade_cost = trade.price * trade.quantity
 
-            # Check if there is enough cash for the trade
-            if trade_cost > self.cash_balance:
-                raise ValueError("Insufficient cash for the trade")
+        # Check if there is enough cash for the trade
+        if trade_cost > self.balance:
+            raise ValueError("Insufficient cash for the trade")
 
-            for position in self.positions:
-                if position.instrument == trade.instrument:
-                    total_quantity = position.quantity + trade.quantity
+        for position in self.positions:
+            if position.instrument == trade.instrument:
+                total_quantity = position.quantity + trade.quantity
+                if total_quantity == 0:
+                    self.positions.remove(position)
+                else:
                     position.price = (position.price * position.quantity + trade.price * trade.quantity) / total_quantity
                     position.quantity = total_quantity
-                    self.cash_balance -= trade_cost
-                    return
+                self.balance -= trade_cost
+                return
 
-            self.positions.append(Position(instrument=trade.instrument, quantity=trade.quantity, price=trade.price))
-            self.cash_balance -= trade_cost
+        self.positions.append(Position(instrument=trade.instrument, quantity=trade.quantity, price=trade.price))
+        self.balance -= trade_cost
 
     def __str__(self):
         return '\n'.join([f'{position.instrument.symbol}: {position.quantity} @ {position.price:.2f}' for position in self.positions])
