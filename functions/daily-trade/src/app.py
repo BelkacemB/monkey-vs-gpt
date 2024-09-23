@@ -7,6 +7,7 @@ from lib.data import load_market_data
 from lib.fin import Portfolio, Instrument, Position, Trade, Market
 from lib.trader import ChatGPTTrader, MonkeyTrader
 from decimal import Decimal
+from pytz import timezone
 
 logging.basicConfig(level=logging.INFO)
 
@@ -15,9 +16,19 @@ table = dynamodb.Table(os.environ['TRADING_TABLE_NAME'])
 
 def lambda_handler(event, context):
     """
-    Main function to run the daily trading comparison between ChatGPT and Monkey traders.
+    Main function to run the trading comparison between ChatGPT and Monkey traders every 3 hours when the market is open.
     """
     try:
+        # Check if the US stock market is open
+        market_open = 13 <= datetime.now(timezone('UTC')).hour < 22
+
+        if not market_open:
+            print("Market is closed. Skipping trading.")
+            return {
+                "statusCode": 200,
+                "body": json.dumps({"message": "Market is closed. No trading performed."})
+            }
+
         # Load market data
         market = load_market_data()
 
@@ -73,10 +84,10 @@ def lambda_handler(event, context):
             }
         }
 
-        print("Daily trading complete")
+        print("Trading complete")
 
         return {
-            "statusCode": 200
+            "statusCode": 200,
         }
     except Exception as e:
         logging.error(f"Error in lambda_handler: {str(e)}")
@@ -103,7 +114,7 @@ def load_portfolio(trader_type: str) -> Portfolio:
         item = response['Item']
         positions = [Position(Instrument(p['symbol'], p['name']), p['quantity'], p['price']) for p in item['positions']]
         return Portfolio(positions, item['balance'])
-    return Portfolio(balance=10000)  # Default initial portfolio
+    return Portfolio(balance=5000)  # Default initial portfolio
 
 def save_portfolio(trader_type: str, portfolio: Portfolio):
     table.put_item(
@@ -133,7 +144,8 @@ def save_portfolio_valuation(trader_type: str, value: float, date: datetime):
     table.put_item(
         Item={
             'PK': f'VALUATION#{trader_type.upper()}',
-            'SK': date.isoformat(),
+            'SK': date.date().isoformat(),  # Use only the date part
+            'timestamp': date.isoformat(),  # Add a timestamp for tracking the latest valuation
             'value': Decimal(str(value))  # Convert float to Decimal
         }
     )

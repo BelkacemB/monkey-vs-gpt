@@ -14,7 +14,7 @@ class Action(Enum):
 
 class Trader(ABC):
 
-    initial_cash = 10000
+    initial_cash = 5000
 
     def __init__(self, market: Market, portfolio: Portfolio):
         self.market = market

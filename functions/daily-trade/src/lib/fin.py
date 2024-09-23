@@ -35,7 +35,7 @@ class Portfolio:
 
     def __init__(self, positions=None, balance=None):
         self.positions = positions or []
-        self.balance = balance or 10000
+        self.balance = balance or 5000
 
     def add(self, trade: Trade):
         print(f"Adding trade to portfolio: {trade}")
