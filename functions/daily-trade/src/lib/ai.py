@@ -11,7 +11,7 @@ client = OpenAI(api_key=API_KEY)
 def generate_ai_trade(market: Market, portfolio: Portfolio) -> Optional[Trade]:
     held_instruments = [position.instrument.symbol for position in portfolio.positions]
     portfolio_prices = {
-        instrument.symbol: market.prices[instrument.symbol]
+        instrument: market.prices[instrument]
         for instrument in held_instruments
     }
 
@@ -39,6 +39,7 @@ def generate_ai_trade(market: Market, portfolio: Portfolio) -> Optional[Trade]:
                             f"And the latest prices of the assets that you already own: {portfolio_prices}\n\n"
                             "Generate a trade and explain it, in JSON format of "
                             "{{symbol: ..., action: ..., explanation: ...}} \n"
+                            f"The symbol must be one of the following: {market.prices.keys()}\n"
                             "Action is 1 for buy, -1 for sell\n"
                             "If there is no interesting trade to make, return an empty json object"
                         ),

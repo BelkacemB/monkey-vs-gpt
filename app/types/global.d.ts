@@ -3,13 +3,6 @@ type Instrument = {
     name?: string | null;
 };
 
-type Trade = {
-    instrument: Instrument;
-    quantity: number;
-    price: number;
-    explanation?: string | null;
-};
-
 type Position = {
     instrument: Instrument;
     quantity: number;
@@ -27,3 +20,29 @@ type Market = {
     news: string[];
     date: Date;
 };
+
+type Valuation = {
+    SK: string;
+    value: number;
+};
+
+type Valuations = {
+    monkeyValuations: Valuation[];
+    chatGptValuations: Valuation[];
+};
+
+type Trade = {
+    PK: string;
+    SK: string;
+    date: Date;
+    price: number;
+    quantity: number;
+    symbol: Instrument;
+    explanation?: string | null;
+};
+
+type Trades = {
+    gptTrades: Trade[];
+    monkeyTrades: Trade[];
+};
+

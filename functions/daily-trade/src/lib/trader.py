@@ -29,7 +29,7 @@ class MonkeyTrader(Trader):
     def __init__(self, market: Market, portfolio: Portfolio):
         self.market = market
         self.portfolio = portfolio
-        self.possible_actions = [Action.BUY, Action.SELL, Action.HOLD]
+        self.possible_actions = [Action.BUY, Action.SELL]
 
     def generate_trade(self) -> Optional[Trade]:
         action = self._choose_action()
