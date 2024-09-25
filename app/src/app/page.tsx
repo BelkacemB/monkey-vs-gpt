@@ -12,7 +12,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen ">
-      <main className="p-8">
+      <main className="px-16 py-8">
         <h1 className="my-10 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
           Monkey vs GPT
         </h1>
@@ -25,12 +25,12 @@ export default async function Home() {
         )}
 
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4 text-cyan-400">Portfolio Valuations</h2>
+          <h2 className="text-2xl font-semibold mb-4">Portfolio Valuations</h2>
           <PortfolioChart valuations={valuations} />
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4 text-pink-400">Last Trades</h2>
+          <h2 className="text-2xl font-semibold mb-4">Last Trades</h2>
           <TradeTimeline trades={trades} />
         </section>
       </main>

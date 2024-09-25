@@ -27,7 +27,7 @@ const PortfolioSummary: React.FC<PortfolioSummaryProps> = ({ name, valuations })
                     {`${name}'s performance`}
                 </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col items-center">
                 <div className="text-2xl font-bold">
                     ${lastValuation.toFixed(2)}
                 </div>

@@ -5,7 +5,7 @@ interface TradeTimelineProps {
 }
 
 export default function TradeTimeline({ trades }: TradeTimelineProps) {
-  const allTrades = [...trades.gptTrades, ...trades.monkeyTrades].sort((a, b) => 
+  const allTrades = [...trades.gptTrades, ...trades.monkeyTrades].sort((a, b) =>
     new Date(b.SK).getTime() - new Date(a.SK).getTime()
   );
 
@@ -19,7 +19,7 @@ export default function TradeTimeline({ trades }: TradeTimelineProps) {
             {isGPTTrade ? (
               <>
                 <div className="w-5/12">
-                  <div className="p-4 rounded-lg shadow-lg bg-cyan-900">
+                  <div className="p-4 rounded-lg shadow-lg">
                     <TradeContent trade={trade} />
                   </div>
                 </div>
@@ -29,7 +29,7 @@ export default function TradeTimeline({ trades }: TradeTimelineProps) {
               <>
                 <div className="w-5/12"></div>
                 <div className="w-5/12">
-                  <div className="p-4 ml-16 rounded-lg shadow-lg bg-pink-900">
+                  <div className="p-4 ml-16 rounded-lg shadow-lg ">
                     <TradeContent trade={trade} />
                   </div>
                 </div>
@@ -44,16 +44,16 @@ export default function TradeTimeline({ trades }: TradeTimelineProps) {
 
 function TradeContent({ trade }) {
   return (
-    <>
+    <div>
       <h3 className="text-lg font-semibold mb-2">{trade.symbol}</h3>
       <p className="text-sm">Quantity: {trade.quantity}</p>
       <p className="text-sm">Price: ${trade.price.toFixed(2)}</p>
-      <p className="text-xs text-gray-400">
-        {new Date(trade.SK).toISOString().replace('T', ' ').slice(0, 19)}
+      <p className="text-xs ">
+        {new Date(trade.SK).toISOString().replace('T', ' ').slice(0, 10)}
       </p>
       {trade.explanation && (
-        <p className="text-xs mt-2 text-gray-300">{trade.explanation}</p>
+        <p className="text-xs mt-2 text-muted-foreground italic">{trade.explanation}</p>
       )}
-    </>
+    </div>
   );
 }
