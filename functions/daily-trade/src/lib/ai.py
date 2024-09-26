@@ -60,7 +60,7 @@ def generate_ai_trade(market: Market, portfolio: Portfolio) -> Optional[Trade]:
     print("generated_trade", trade_data)
     if trade_data and trade_data["symbol"] in market.prices.keys():
         return Trade(
-            instrument=Instrument(symbol=trade_data["symbol"]),
+            instrument=Instrument(symbol=trade_data["symbol"], name=market.names[trade_data["symbol"]]),
             quantity=trade_data["action"],
             explanation=trade_data["explanation"],
             price=market.prices[trade_data["symbol"]],

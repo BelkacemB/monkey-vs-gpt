@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from .fin import Trade, Market, Portfolio, Instrument
 import random
-from typing import Optional, List
+from typing import Optional
 from .ai import generate_ai_trade
 from enum import Enum
 
@@ -27,22 +27,22 @@ class Trader(ABC):
 
 class MonkeyTrader(Trader):
     def __init__(self, market: Market, portfolio: Portfolio):
-        self.market = market
-        self.portfolio = portfolio
+        super().__init__(market, portfolio)
         self.possible_actions = [Action.BUY, Action.SELL]
+        self.buy_probability = 0.7  # 70% probability for buy
 
     def generate_trade(self) -> Optional[Trade]:
         action = self._choose_action()
         print("Monkey trader is planning to " + action.value)
-        if action.value == Action.BUY.value:
+        if action == Action.BUY:
             return self._generate_buy_trade()
-        elif action.value == Action.SELL.value:
+        elif action == Action.SELL:
             return self._generate_sell_trade()
         else:
             return None
 
     def _choose_action(self) -> Action:
-        return random.choice(self.possible_actions)
+        return Action.BUY if random.random() < self.buy_probability else Action.SELL
 
     def _generate_buy_trade(self) -> Trade:
         symbol = random.choice(list(self.market.prices.keys()))
