@@ -1,94 +1,76 @@
 import json
 import logging
-import os
-import boto3
 from datetime import datetime
 from lib.data import load_market_data
-from lib.fin import Portfolio, Instrument, Position, Trade, Market
-from lib.trader import ChatGPTTrader, MonkeyTrader
-from decimal import Decimal
+from lib.fin import calculate_portfolio_value
+from lib.trader import ChatGPTTrader, MonkeyTrader, initial_cash
+from lib.db import save_trade, save_portfolio, save_portfolio_valuation, load_portfolio, load_portfolio_valuation
 from pytz import timezone
 
 logging.basicConfig(level=logging.INFO)
 
-dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table(os.environ['TRADING_TABLE_NAME'])
+def is_market_open():
+    return (13 <= datetime.now(timezone('UTC')).hour < 22) and (datetime.now(timezone('UTC')).weekday() < 5)
 
-def lambda_handler(event, context):
+def is_rebalance_needed(trader1, trader2):
+   is_first_tick_of_the_week = datetime.now(timezone('UTC')).weekday() == 0 and not load_portfolio_valuation('chatgpt', datetime.now(timezone('UTC')).date())
+   empty_portfolio = not trader1.portfolio.positions and not trader2.portfolio.positions
+   return is_first_tick_of_the_week or empty_portfolio
+
+def initialize_traders(market):
+    chatgpt_portfolio = load_portfolio('chatgpt')
+    monkey_portfolio = load_portfolio('monkey')
+    return (
+        ChatGPTTrader(market, chatgpt_portfolio),
+        MonkeyTrader(market, monkey_portfolio)
+    )
+
+def execute_trades(trader, portfolio, market):
+    trade = trader.generate_trade()
+    if trade:
+        portfolio.add(trade)
+        save_trade(trader.__class__.__name__.lower(), trade, market.date)
+    return trade
+
+def update_portfolio(trader_name, portfolio, market):
+    value = calculate_portfolio_value(portfolio, market)
+    save_portfolio_valuation(trader_name, value, market.date)
+    save_portfolio(trader_name, portfolio)
+    return value
+
+def main():
     """
     Main function to run the trading comparison between ChatGPT and Monkey traders every 3 hours when the market is open.
     """
     try:
-        # Check if the US stock market is open
-        market_open = 13 <= datetime.now(timezone('UTC')).hour < 22
-
-        if not market_open:
-            print("Market is closed. Skipping trading.")
+        if not is_market_open():
             return {
                 "statusCode": 200,
                 "body": json.dumps({"message": "Market is closed. No trading performed."})
             }
 
-        # Load market data
         market = load_market_data()
+        chatgpt_trader, monkey_trader = initialize_traders(market)
 
-        # Initialize portfolios
-        print("Loading portfolios...")
-        chatgpt_portfolio = load_portfolio('chatgpt')
-        monkey_portfolio = load_portfolio('monkey')
 
-        # Initialize traders
-        print("Initializing traders...")
-        chatgpt_trader = ChatGPTTrader(market, chatgpt_portfolio)
-        monkey_trader = MonkeyTrader(market, monkey_portfolio)
+        if is_rebalance_needed(chatgpt_trader, monkey_trader):
+            print("Rebalancing portfolios...")
+            chatgpt_trader.rebalance()
+            monkey_trader.rebalance()
+        else:
+            print("Executing daily trades")
+            execute_trades(chatgpt_trader, chatgpt_trader.portfolio, market) if chatgpt_trader.portfolio.positions else None
+            execute_trades(monkey_trader, monkey_trader.portfolio, market) if monkey_trader.portfolio.positions else None
 
-        # Generate and execute trades
-        print("Generating trades...")
-        chatgpt_trade = chatgpt_trader.generate_trade()
-        monkey_trade = monkey_trader.generate_trade()
-
-        print("Executing trades...")
-        if chatgpt_trade:
-            chatgpt_portfolio.add(chatgpt_trade)
-            save_trade('chatgpt', chatgpt_trade, market.date)
-
-        if monkey_trade:
-            monkey_portfolio.add(monkey_trade)
-            save_trade('monkey', monkey_trade, market.date)
-
-        # Calculate portfolio values
-        print("Calculating portfolio values...")
-        chatgpt_value = calculate_portfolio_value(chatgpt_portfolio, market)
-        monkey_value = calculate_portfolio_value(monkey_portfolio, market)
-
-        # Save portfolio valuations
-        print("Saving portfolio valuations...")
-        save_portfolio_valuation('chatgpt', chatgpt_value, market.date)
-        save_portfolio_valuation('monkey', monkey_value, market.date)
-
-        # Save updated portfolios
-        print("Updating portfolios...")
-        save_portfolio('chatgpt', chatgpt_portfolio)
-        save_portfolio('monkey', monkey_portfolio)
-
-        # Prepare result
-        result = {
-            "date": market.date.isoformat(),
-            "chatgpt_portfolio": {
-                "value": chatgpt_value,
-                "trade": str(chatgpt_trade) if chatgpt_trade else "No trade"
-            },
-            "monkey_portfolio": {
-                "value": monkey_value,
-                "trade": str(monkey_trade) if monkey_trade else "No trade"
-            }
-        }
+        update_portfolio('chatgpt', chatgpt_trader.portfolio, market)
+        update_portfolio('monkey', monkey_trader.portfolio, market)
 
         print("Trading complete")
 
         return {
-            "statusCode": 200,
+            "statusCode": 200
         }
+
     except Exception as e:
         logging.error(f"Error in lambda_handler: {str(e)}")
         return {
@@ -96,56 +78,5 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": str(e)}),
         }
 
-def calculate_portfolio_value(portfolio: Portfolio, market: Market) -> Decimal:
-    total_value = Decimal(str(portfolio.balance))
-    for position in portfolio.positions:
-        if position.instrument.symbol in market.prices:
-            total_value += Decimal(str(position.quantity)) * Decimal(str(market.prices[position.instrument.symbol]))
-    return total_value
-
-def load_portfolio(trader_type: str) -> Portfolio:
-    response = table.get_item(
-        Key={
-            'PK': f'PORTFOLIO#{trader_type.upper()}',
-            'SK': 'LATEST'
-        }
-    )
-    if 'Item' in response:
-        item = response['Item']
-        positions = [Position(Instrument(p['symbol'], p['name']), p['quantity'], p['price']) for p in item['positions']]
-        return Portfolio(positions, item['balance'])
-    return Portfolio(balance=5000)  # Default initial portfolio
-
-def save_portfolio(trader_type: str, portfolio: Portfolio):
-    table.put_item(
-        Item={
-            'PK': f'PORTFOLIO#{trader_type.upper()}',
-            'SK': 'LATEST',
-            'balance': Decimal(str(portfolio.balance)),
-            'positions': [{'symbol': p.instrument.symbol, 'name': p.instrument.name, 'quantity': p.quantity, 'price': Decimal(str(p.price))} for p in portfolio.positions]
-        }
-    )
-
-def save_trade(trader_type: str, trade: Trade, date: datetime):
-    print(f"Saving trade for {trader_type}: {trade}")
-    table.put_item(
-        Item={
-            'PK': f'TRADE#{trader_type.upper()}',
-            'SK': date.isoformat(),
-            'symbol': trade.instrument.symbol,
-            'quantity': Decimal(trade.quantity),  # Convert to Decimal
-            'price': Decimal(trade.price),  # Convert to Decimal
-            'explanation': trade.explanation
-        }
-    )
-
-def save_portfolio_valuation(trader_type: str, value: float, date: datetime):
-    print(f"Saving portfolio valuation for {trader_type}: {value}")
-    table.put_item(
-        Item={
-            'PK': f'VALUATION#{trader_type.upper()}',
-            'SK': date.date().isoformat(),  # Use only the date part
-            'timestamp': date.isoformat(),  # Add a timestamp for tracking the latest valuation
-            'value': Decimal(str(value))  # Convert float to Decimal
-        }
-    )
+def lambda_handler(event, context):
+    return main()

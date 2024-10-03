@@ -20,7 +20,7 @@ def portfolio():
 
 @pytest.fixture
 def non_empty_portfolio(trade):
-    portfolio = Portfolio(positions=[Position(instrument=trade.instrument, quantity=5, price=100.0)], balance=5000)
+    portfolio = Portfolio(positions=[Position(instrument=trade.instrument, quantity=5, price=100.0)], balance=10000)
     return portfolio
 
 def test_add_trade(portfolio, trade):

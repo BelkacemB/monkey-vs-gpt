@@ -16,7 +16,7 @@ def mock_market():
 def mock_portfolio():
     return Portfolio(
         positions=[],
-        balance=5000.0
+        balance=10000.0
     )
 
 @pytest.fixture

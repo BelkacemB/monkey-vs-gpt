@@ -35,7 +35,7 @@ class Portfolio:
 
     def __init__(self, positions=None, balance=None):
         self.positions = positions or []
-        self.balance = balance or 5000
+        self.balance = balance or 10000
 
     def add(self, trade: Trade):
         print(f"Adding trade to portfolio: {trade}")
@@ -73,3 +73,10 @@ class Market:
     news: List[str] = field(default_factory=list)
     date: datetime = datetime.now()
     names: dict = field(default_factory=dict)
+
+def calculate_portfolio_value(portfolio: Portfolio, market: Market) -> Decimal:
+    total_value = Decimal(str(portfolio.balance))
+    for position in portfolio.positions:
+        if position.instrument.symbol in market.prices:
+            total_value += Decimal(str(position.quantity)) * Decimal(str(market.prices[position.instrument.symbol]))
+    return total_value
