@@ -6,10 +6,10 @@ let dbClientInstance: DynamoDBClient;
 export const getDbClient = () => {
     if (!dbClientInstance) {
         dbClientInstance = new DynamoDBClient({
-            region: process.env.AWS_REGION,
+            region: process.env.AWS_DB_REGION,
             credentials: {
-                accessKeyId: process.env.AWS_ACCESS_KEY,
-                secretAccessKey: process.env.AWS_ACCESS_SECRET
+                accessKeyId: process.env.AWS_DB_ACCESS_KEY,
+                secretAccessKey: process.env.AWS_DB_ACCESS_SECRET
             },
         });
     }
