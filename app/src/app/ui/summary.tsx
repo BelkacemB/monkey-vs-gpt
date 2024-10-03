@@ -15,7 +15,7 @@ const PortfolioSummary: React.FC<PortfolioSummaryProps> = ({ name, valuations })
     const chatGptValuations = valuations['chatGptValuations'];
 
     const lastValuation = name === 'Monkey Portfolio' ? monkeyValuations[monkeyValuations.length - 1].value : chatGptValuations[chatGptValuations.length - 1].value;
-    const percentageChange = ((lastValuation - 5000) / 5000) * 100;
+    const percentageChange = ((lastValuation - 10000) / 10000) * 100;
 
     const traderName = name === 'Monkey Portfolio' ? 'The Kong of Wall Street' : 'The Wall Street Cyborg';
 

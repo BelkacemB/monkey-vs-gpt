@@ -4,7 +4,8 @@ type Instrument = {
 };
 
 type Position = {
-    instrument: Instrument;
+    symbol: string;
+    name: string;
     quantity: number;
     price: number;
 };
@@ -46,3 +47,12 @@ type Trades = {
     monkeyTrades: Trade[];
 };
 
+type PortfolioData = {
+    chatGptPortfolio: Portfolio;
+    monkeyPortfolio: Portfolio;
+};
+
+type ValuationData = {
+    monkeyValuations: Valuation[];
+    chatGptValuations: Valuation[];
+};

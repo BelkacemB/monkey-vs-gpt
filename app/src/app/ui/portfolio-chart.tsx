@@ -5,7 +5,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-export default function PortfolioChart({ valuations }) {
+export default function PortfolioChart({ valuations }: { valuations: ValuationData }) {
   const dates = valuations.monkeyValuations.map(v => v.SK);
   const monkeyData = valuations.monkeyValuations.map(v => v.value);
   const chatGptData = valuations.chatGptValuations.map(v => v.value);
