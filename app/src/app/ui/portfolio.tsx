@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Wallet } from "lucide-react"
-import Image from "next/image"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+
 interface PortfolioProps {
   positions: Position[]
   cash: number,
@@ -36,11 +37,12 @@ export default function Portfolio({ positions, cash, name, type }: PortfolioProp
     <Card className="w-full max-w-sm mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-bold flex items-center">
-          {type === 'bot' ? (
-            <Image src={`/robot.svg`} alt={name} width={32} height={32} className="mr-2" />
-          ) : (
-            <Image src={`/monkey.svg`} alt={name} width={32} height={32} className="mr-2" />
-          )}
+            <Avatar className="h-16 w-16 mr-4">
+              <AvatarImage src={ type === 'bot' ? '/robot.png' : '/monkey.png' } alt={name} />
+              <AvatarFallback>
+                {type === 'bot' ? 'B' : 'R'}
+              </AvatarFallback>
+            </Avatar>
           {name}
         </CardTitle>
         <CardDescription>

@@ -4,8 +4,8 @@ import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { getDbClient } from "@/app/lib/db";
 
 export async function GET() {
-    const gptTrades = await fetchTrades("TRADE#CHATGPT");
-    const monkeyTrades = await fetchTrades("TRADE#MONKEY");
+    const gptTrades = await fetchTrades("TRADE#CHATGPTTRADER");
+    const monkeyTrades = await fetchTrades("TRADE#MONKEYTRADER");
 
     if (!gptTrades || !monkeyTrades) {
         return NextResponse.json({ error: "Trades not found" }, { status: 404 });
