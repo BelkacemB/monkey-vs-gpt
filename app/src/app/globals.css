@@ -74,6 +74,9 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    background-image: var(--background-image);
+    background-attachment: fixed;
+    background-size: cover;
   }
 }
 
@@ -88,4 +91,13 @@ body {
 
 .animate-ticker {
   animation: ticker linear infinite;
+}
+
+/* Add these new styles at the end of the file */
+.gradient-background {
+  --background-image: radial-gradient(
+    circle at 12.3% 19.3%,
+    rgba(38, 201, 201, 0.1) 0%,
+    rgba(187, 196, 206, 0.1) 90%
+  );
 }

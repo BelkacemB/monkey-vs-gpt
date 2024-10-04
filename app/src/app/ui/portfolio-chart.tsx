@@ -6,9 +6,13 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 export default function PortfolioChart({ valuations }: { valuations: ValuationData }) {
-  const dates = valuations.monkeyValuations.map(v => v.SK);
-  const monkeyData = valuations.monkeyValuations.map(v => v.value);
-  const chatGptData = valuations.chatGptValuations.map(v => v.value);
+  const firstDate = new Date(valuations.monkeyValuations[0].SK);
+  firstDate.setDate(firstDate.getDate() - 1);
+  const formattedFirstDate = firstDate.toISOString().split('T')[0];
+
+  const dates = [formattedFirstDate, ...valuations.monkeyValuations.map(v => v.SK)]
+  const monkeyData = [10000, ...valuations.monkeyValuations.map(v => v.value)];
+  const chatGptData = [10000, ...valuations.chatGptValuations.map(v => v.value)];
 
   const data = {
     labels: dates,
@@ -17,11 +21,13 @@ export default function PortfolioChart({ valuations }: { valuations: ValuationDa
         label: 'Monkey Portfolio',
         data: monkeyData,
         borderColor: 'rgba(255, 99, 132, 1)',
+        tension: 0.4, // Add this line
       },
       {
         label: 'ChatGPT Portfolio',
         data: chatGptData,
         borderColor: 'rgba(0, 255, 255, 1)',
+        tension: 0.4, // Add this line
       },
     ],
   };

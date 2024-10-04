@@ -14,7 +14,7 @@ export const getPortfolios = cache(async (): Promise<PortfolioData> => {
 
 export const getTrades = cache(async () => {
     const res = await fetch(`${baseUrl}/api/trades`, {
-       cache: 'no-store' // Cache for 2 hours (7200 seconds)
+       cache: 'no-store'
     });
     if (!res.ok) {
         throw new Error('Failed to fetch trades');
@@ -22,9 +22,9 @@ export const getTrades = cache(async () => {
     return res.json();
 });
 
-export const getValuations = cache(async () => {
+export const getValuations = cache(async (): Promise<ValuationData> => {
     const res = await fetch(`${baseUrl}/api/valuations`, {
-        cache: 'no-store' // Cache for 2 hours (7200 seconds)
+        cache: 'no-store'
     });
     if (!res.ok) {
         throw new Error('Failed to fetch valuations');

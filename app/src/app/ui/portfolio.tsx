@@ -2,17 +2,18 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Wallet } from "lucide-react"
+import { Wallet, TrendingUp, TrendingDown } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
 interface PortfolioProps {
   positions: Position[]
   cash: number,
   name: string,
-  type: 'bot' | 'random'
+  type: 'bot' | 'random',
+  latestValuation: Valuation
 }
 
-export default function Portfolio({ positions, cash, name, type }: PortfolioProps) {
+export default function Portfolio({ positions, cash, name, type, latestValuation }: PortfolioProps) {
   const [isOverflowing, setIsOverflowing] = useState(false)
   const tickerRef = useRef<HTMLDivElement>(null)
   const totalValue = positions.reduce((sum, stock) => sum + stock.quantity * stock.price, 0) + cash
@@ -33,17 +34,27 @@ export default function Portfolio({ positions, cash, name, type }: PortfolioProp
     }).format(value);
   };
 
+  const performance = ((latestValuation.value - 10000) / 10000) * 100
+
+  const getNameGradient = (type: 'bot' | 'random') => {
+    return type === 'bot'
+      ? 'bg-gradient-to-r from-gray-500 via-gray-400 to-gray-500'
+      : 'bg-gradient-to-r from-amber-700 via-yellow-900 to-orange-800';
+  };
+
   return (
     <Card className="w-full max-w-sm mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-bold flex items-center">
-            <Avatar className="h-16 w-16 mr-4">
-              <AvatarImage src={ type === 'bot' ? '/robot.png' : '/monkey.png' } alt={name} />
-              <AvatarFallback>
-                {type === 'bot' ? 'B' : 'R'}
-              </AvatarFallback>
-            </Avatar>
-          {name}
+          <Avatar className="h-16 w-16 mr-4">
+            <AvatarImage src={type === 'bot' ? '/robot.png' : '/monkey.png'} alt={name} />
+            <AvatarFallback>
+              {type === 'bot' ? 'B' : 'R'}
+            </AvatarFallback>
+          </Avatar>
+          <span className={`text-2xl font-bold ${getNameGradient(type)} text-transparent bg-clip-text`}>
+            {name}
+          </span>
         </CardTitle>
         <CardDescription>
           {type === 'bot' ? 'ChatGPT-powered trader that reads financial news and makes trades based on the news' : 'Random trader that makes trades based on a random strategy'}
@@ -51,8 +62,13 @@ export default function Portfolio({ positions, cash, name, type }: PortfolioProp
       </CardHeader>
       <CardContent>
         <div className="mb-6">
-          <h3 className="text-xl font-semibold mb-2">Market value</h3>
-          <p className="text-3xl font-bold">${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <div className="flex items-center justify-between">
+            <div>
+          <p className="text-sm text-muted-foreground">Total Value</p>
+          <p className="text-2xl font-bold">{formatCurrency(totalValue)}</p>
+          </div>
+          <Performance performance={performance} />
+          </div>
         </div>
         <div className="overflow-hidden" style={{ height: '60px' }}>
           <div
@@ -85,5 +101,15 @@ export default function Portfolio({ positions, cash, name, type }: PortfolioProp
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+// A react component that takes in a performance number and returns a the number with a up or down arrow, green or red
+const Performance = ({ performance }: { performance: number }) => {
+  return (
+    <p className={`flex text-xl font-semibold items-center justify-end ${performance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+      {performance >= 0 ? <TrendingUp className="w-8 h-8 mr-2" /> : <TrendingDown className="w-8 h-8 mr-1" />}
+      {performance.toFixed(2)}%
+    </p>
   )
 }

@@ -11,14 +11,15 @@ export default function TradeTimeline({ trades }: TradeTimelineProps) {
 
   return (
     <div className="relative">
-      <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b"></div>
+      <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b from-foreground to-accent"></div>
       {allTrades.slice(0, 5).map((trade, index) => {
         const isGPTTrade = trade.PK.includes('CHATGPT');
         return (
-          <div key={index} className="mb-8 flex items-center w-full">
+          <div key={index} className="mb-8 flex justify-center items-center w-full relative">
+            <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full bg-background border-2 border-secondary-500"></div>
             {isGPTTrade ? (
               <>
-                <div className="w-5/12">
+                <div className="w-5/12 pr-8">
                   <div className="p-4 rounded-lg shadow-lg">
                     <TradeContent trade={trade} />
                   </div>
@@ -28,8 +29,8 @@ export default function TradeTimeline({ trades }: TradeTimelineProps) {
             ) : (
               <>
                 <div className="w-5/12"></div>
-                <div className="w-5/12">
-                  <div className="p-4 ml-16 rounded-lg shadow-lg ">
+                <div className="w-5/12 pl-8">
+                  <div className="p-4 rounded-lg shadow-lg">
                     <TradeContent trade={trade} />
                   </div>
                 </div>
