@@ -21,12 +21,12 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        DailySchedule:
+        EveryTwoHours:
           Type: Schedule
           Properties:
-            Schedule: cron(0 0 * * ? *)
-            Name: DailyTradeSchedule
-            Description: Trigger the daily trade comparison function every day at midnight UTC
+            Schedule: cron(0 */2 * * ? *)
+            Name: EveryTwoHours
+            Description: Trigger the trade comparison function every 2 hours
       Policies:
         - AWSLambdaBasicExecutionRole
         - CloudWatchLogsFullAccess
@@ -63,3 +63,12 @@ Outputs:
   TradingTableName:
     Description: "Name of the DynamoDB table"
     Value: !Ref TradingTable
+
+Parameters:
+  TradingTableName:
+    Type: String
+    Description: "The name of the DynamoDB table"
+  
+  OpenAIApiKey:
+    Type: String
+    Description: "The OpenAI API key"
