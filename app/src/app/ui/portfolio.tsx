@@ -56,7 +56,7 @@ export default function Portfolio({ positions, cash, name, type, latestValuation
           </span>
         </CardTitle>
         <CardDescription>
-          {type === 'bot' ? 'ChatGPT-powered trader that reads financial news and makes trades based on the news' : 'A sophisticatedmonkey that picks stocks by throwing darts at a board'}
+          {type === 'bot' ? 'ChatGPT-powered trader that reads financial news and makes trades based on the news' : 'A sophisticated monkey that picks stocks by throwing darts at a board'}
         </CardDescription>
       </CardHeader>
       <CardContent>
