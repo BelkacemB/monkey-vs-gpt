@@ -8,7 +8,7 @@ const Header: React.FC = () => {
     <header className="sticky top-0 z-50 flex items-center w-full h-16 px-4 border-b shrink-0 bg-muted">
       <div className="flex-1">
         <Link href="/">
-          <p className='text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500'>س</p>
+          <p className='text-2xl font-bold text-transparent'>س</p>
         </Link>
       </div>
       <div className="flex-1 flex justify-center">
@@ -23,7 +23,7 @@ const Header: React.FC = () => {
         </a>
       </div>
       <div className="flex-1 text-right">
-        <p className='text-sm text-muted-foreground'>Made with ❤️ by <Link href="https://belkacem.dev" className='underline'>Belkacem</Link></p>
+        <p className='text-sm text-muted-foreground whitespace-normal'>Made with ❤️ by <Link href="https://belkacem.dev" className='underline'>Belkacem</Link></p>
       </div>
     </header>
   );

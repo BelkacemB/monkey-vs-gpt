@@ -16,7 +16,6 @@ interface PortfolioProps {
 export default function Portfolio({ positions, cash, name, type, latestValuation }: PortfolioProps) {
   const [isOverflowing, setIsOverflowing] = useState(false)
   const tickerRef = useRef<HTMLDivElement>(null)
-  const totalValue = positions.reduce((sum, stock) => sum + stock.quantity * stock.price, 0) + cash
 
   useEffect(() => {
     const ticker = tickerRef.current
@@ -57,15 +56,15 @@ export default function Portfolio({ positions, cash, name, type, latestValuation
           </span>
         </CardTitle>
         <CardDescription>
-          {type === 'bot' ? 'ChatGPT-powered trader that reads financial news and makes trades based on the news' : 'Random trader that makes trades based on a random strategy'}
+          {type === 'bot' ? 'ChatGPT-powered trader that reads financial news and makes trades based on the news' : 'A sophisticatedmonkey that picks stocks by throwing darts at a board'}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
-          <p className="text-sm text-muted-foreground">Total Value</p>
-          <p className="text-2xl font-bold">{formatCurrency(totalValue)}</p>
+          <p className="text-sm text-muted-foreground">Market Value</p>
+          <p className="text-2xl font-bold">{formatCurrency(latestValuation.value)}</p>
           </div>
           <Performance performance={performance} />
           </div>

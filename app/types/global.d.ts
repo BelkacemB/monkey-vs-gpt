@@ -38,7 +38,7 @@ type Trade = {
     date: Date;
     price: number;
     quantity: number;
-    symbol: Instrument;
+    symbol: string;
     explanation?: string | null;
 };
 
