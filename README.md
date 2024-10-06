@@ -1,5 +1,7 @@
 # Monkey vs GPT: Stock Trading Showdown
 
+![image](https://github.com/user-attachments/assets/7e5a4237-0a94-4412-af91-35b8fb37d8bb)
+
 ## Overview
 
 This project is an experiment that pits a ChatGPT-powered AI trader against a "monkey" trader (simulating random stock picks) in a virtual stock market (using real market news and data). The goal is to compare the performance of AI-driven trading strategies against random selection over time.
