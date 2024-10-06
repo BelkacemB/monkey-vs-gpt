@@ -34,7 +34,7 @@ This project is an experiment that pits a ChatGPT-powered AI trader against a "m
 
 1. Clone the repository:
    ```
-   git clone https://github.com/your-username/monkey-vs-gpt.git
+   git clone https://github.com/belkacemb/monkey-vs-gpt.git
    cd monkey-vs-gpt
    ```
 
