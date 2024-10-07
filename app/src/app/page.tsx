@@ -6,6 +6,8 @@ import { getPortfolios, getValuations, getTrades } from '@/app/lib/api'
 import { Separator } from '@/components/ui/separator'
 import Header from './ui/header'
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const portfolios = await getPortfolios();
   const valuations = await getValuations();
