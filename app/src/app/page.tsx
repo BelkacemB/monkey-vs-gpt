@@ -2,11 +2,42 @@ import Image from 'next/image'
 import PortfolioChart from '@/app/ui/portfolio-chart'
 import TradeTimeline from '@/app/ui/timeline'
 import Portfolio from '@/app/ui/portfolio'
-import { getPortfolios, getValuations, getTrades } from '@/app/lib/api'
 import { Separator } from '@/components/ui/separator'
 import Header from './ui/header'
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'
+
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
+const getPortfolios = async (): Promise<PortfolioData> => {
+    const res = await fetch(`${baseUrl}/api/portfolios`, {
+        cache: 'no-store',
+    });
+    if (!res.ok) {
+        throw new Error('Failed to fetch portfolios');
+    }
+    return res.json();
+};
+
+const getTrades = async () => {
+    const res = await fetch(`${baseUrl}/api/trades`, {
+       cache: 'no-store',
+    });
+    if (!res.ok) {
+        throw new Error('Failed to fetch trades');
+    }
+    return res.json();
+};
+
+const getValuations = async (): Promise<ValuationData> => {
+    const res = await fetch(`${baseUrl}/api/valuations`, {
+        cache: 'no-store',
+    });
+    if (!res.ok) {
+        throw new Error('Failed to fetch valuations');
+    }
+    return res.json();
+};
 
 export default async function Home() {
   const portfolios = await getPortfolios();
