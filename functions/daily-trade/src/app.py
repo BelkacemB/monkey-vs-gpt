@@ -13,7 +13,8 @@ def is_market_open():
     return (13 <= datetime.now(timezone('UTC')).hour < 22) and (datetime.now(timezone('UTC')).weekday() < 5)
 
 def is_rebalance_needed(trader1, trader2):
-   is_first_tick_of_the_week = datetime.now(timezone('UTC')).weekday() == 0 and not load_portfolio_valuation('chatgpt', datetime.now(timezone('UTC')).date())
+   current_datetime = datetime.now(timezone('UTC'))
+   is_first_tick_of_the_week = current_datetime.weekday() == 0 and not load_portfolio_valuation('chatgpt', current_datetime)
    empty_portfolio = not trader1.portfolio.positions and not trader2.portfolio.positions
    return is_first_tick_of_the_week or empty_portfolio
 

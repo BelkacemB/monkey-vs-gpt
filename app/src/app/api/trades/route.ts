@@ -11,10 +11,17 @@ export async function GET() {
         return NextResponse.json({ error: "Trades not found" }, { status: 404 });
     }
 
-    return NextResponse.json({
-        gptTrades,
-        monkeyTrades
-    });
+    return NextResponse.json(
+        {
+            gptTrades,
+            monkeyTrades
+        },
+        {
+            headers: {
+                'Cache-Control': 'no-store, max-age=0',
+            },
+        }
+    );
 }
 
 async function fetchTrades(pk: string) {

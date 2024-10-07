@@ -19,8 +19,15 @@ export async function GET() {
     const monkeyValuations = await getAllValuations('monkey');
     const chatGptValuations = await getAllValuations('chatgpt');
 
-    return NextResponse.json({
-        monkeyValuations,
-        chatGptValuations
-    });
+    return NextResponse.json(
+        {
+            monkeyValuations,
+            chatGptValuations
+        },
+        {
+            headers: {
+                'Cache-Control': 'no-store, max-age=0',
+            },
+        }
+    );
 }

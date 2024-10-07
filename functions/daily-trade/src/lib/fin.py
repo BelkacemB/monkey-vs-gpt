@@ -43,7 +43,8 @@ class Portfolio:
 
         # Check if there is enough cash for the trade
         if trade_cost > Decimal(self.balance):  # Convert balance to Decimal
-            raise ValueError("Insufficient cash for the trade")
+            print("Warning: Insufficient cash for the trade")
+            return
 
         for position in self.positions:
             if position.instrument == trade.instrument:

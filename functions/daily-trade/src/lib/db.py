@@ -56,6 +56,7 @@ def save_portfolio_valuation(trader_type: str, value: float, date: datetime):
     )
 
 def load_portfolio_valuation(trader_type: str, date: datetime) -> Optional[float]:
+    print(f"Loading portfolio valuation for {trader_type} on {date}")
     response = table.get_item(
         Key={
             'PK': f'VALUATION#{trader_type.upper()}',

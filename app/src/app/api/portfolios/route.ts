@@ -28,8 +28,15 @@ export async function GET() {
         return NextResponse.json({ error: "Portfolio not found" }, { status: 404 });
     }
 
-    return NextResponse.json({
-        chatGptPortfolio: unmarshall(chatGptPortfolio?.Item),
-        monkeyPortfolio: unmarshall(monkeyPortfolio?.Item)
-    });
+    return NextResponse.json(
+        {
+            chatGptPortfolio: unmarshall(chatGptPortfolio?.Item),
+            monkeyPortfolio: unmarshall(monkeyPortfolio?.Item)
+        },
+        {
+            headers: {
+                'Cache-Control': 'no-store, max-age=0',
+            },
+        }
+    );
 }
