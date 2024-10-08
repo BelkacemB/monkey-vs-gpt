@@ -3,6 +3,8 @@ import { ScanCommand } from "@aws-sdk/client-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { getDbClient } from "@/app/lib/db";
 
+export const dynamic = 'force-dynamic';
+
 async function getAllValuations(traderType: string) {
     const response = await getDbClient().send(new ScanCommand({
         TableName: "TradingTable",

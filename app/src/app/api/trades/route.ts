@@ -3,6 +3,8 @@ import { QueryCommand } from "@aws-sdk/client-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { getDbClient } from "@/app/lib/db";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     const gptTrades = await fetchTrades("TRADE#CHATGPTTRADER");
     const monkeyTrades = await fetchTrades("TRADE#MONKEYTRADER");
