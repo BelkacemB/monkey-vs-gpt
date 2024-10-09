@@ -37,7 +37,8 @@ class Trader(ABC):
         return math.floor(cash / price)
 
     def _liquidate_holdings(self):
-        for holding in self.portfolio.positions:
+        positions_to_liquidate = self.portfolio.positions.copy()
+        for holding in positions_to_liquidate:
             trade = Trade(instrument=holding.instrument, quantity=-holding.quantity, price=self.market.prices[holding.instrument.symbol])
             self.portfolio.add(trade)
 

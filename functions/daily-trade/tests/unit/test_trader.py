@@ -1,5 +1,6 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
+from decimal import Decimal
 from src.lib import trader as t
 from src.lib.fin import Market, Portfolio, Trade, Instrument, Position
 
@@ -43,45 +44,81 @@ class TestChatGPTTrader:
         mock_generate_ai_trade.assert_called_once_with(market, portfolio)
 
 class TestMonkeyTrader:
-    def test_generate_trade_buy(self, market, portfolio):
-        with patch('random.choice') as mock_choice:
-            mock_choice.side_effect = ['buy', 'AAPL']
-            trader = t.MonkeyTrader(market, portfolio)
-            trade = trader.generate_trade()
+    @patch('random.random')
+    @patch('random.choice')
+    def test_generate_trade_buy(self, mock_choice, mock_random, market, portfolio):
+        mock_random.return_value = 0.5  # This will trigger a buy action (< 0.7)
+        mock_choice.return_value = 'AAPL'
 
-            assert trade is not None
-            assert trade.instrument.symbol == 'AAPL'
-            assert trade.quantity == 1
-            assert trade.price == 150.0
+        trader = t.MonkeyTrader(market, portfolio)
+        trade = trader.generate_trade()
 
-    def test_generate_trade_sell(self, market, portfolio):
-        with patch('random.choice') as mock_choice:
-            mock_choice.side_effect = ['sell', portfolio.positions[1]]
+        assert trade is not None
+        assert trade.instrument.symbol == 'AAPL'
+        assert trade.quantity == 1
+        assert trade.price == 150.0
 
-            trader = t.MonkeyTrader(market, portfolio)
-            trade = trader.generate_trade()
+        mock_random.assert_called_once()
+        mock_choice.assert_called_once_with(list(market.prices.keys()))
 
-            assert trade is not None
-            assert trade.instrument.symbol == 'AAPL'
-            assert trade.quantity == -1
-            assert trade.price == 150.0
+    @patch('random.random')
+    @patch('random.choice')
+    def test_generate_trade_sell(self, mock_choice, mock_random, market, portfolio):
+        mock_random.return_value = 0.8  # This will trigger a sell action (> 0.7)
+        mock_choice.return_value = Instrument(symbol='AAPL', name='Apple')
 
-    def test_generate_trade_hold(self, market, portfolio):
-        with patch('random.choice') as mock_choice:
-            mock_choice.return_value = 'hold'
-            trader = t.MonkeyTrader(market, portfolio)
-            trade = trader.generate_trade()
+        trader = t.MonkeyTrader(market, portfolio)
+        trade = trader.generate_trade()
 
-            assert trade is None
+        assert trade is not None
+        assert trade.instrument.symbol == 'AAPL'
+        assert trade.quantity == -1
+        assert trade.price == 150.0
+
 
     def test_generate_trade_sell_only_cash(self, market):
         portfolio = Portfolio(
             positions=[],
             balance=10000
         )
-        with patch('random.choice') as mock_choice:
-            mock_choice.side_effect = ['sell']
+        with patch('random.random') as mock_choice:
+            mock_choice.return_value = 0.8
             trader = t.MonkeyTrader(market, portfolio)
             trade = trader.generate_trade()
 
             assert trade is None
+
+    @patch('random.sample')
+    def test_rebalance(self, mock_sample, market, portfolio):
+        # Setup initial portfolio with some positions
+        initial_positions = [
+            Position(instrument=Instrument('AAPL', 'Apple Inc.'), quantity=10, price=150.0),
+            Position(instrument=Instrument('GOOGL', 'Alphabet Inc.'), quantity=5, price=2500.0),
+        ]
+        portfolio.positions = initial_positions
+        portfolio.balance = Decimal('1000')  # Some remaining cash
+
+        # Mock the initial_selection method to return a fixed list of instruments
+        mock_instruments = [
+            Instrument('MSFT', 'Microsoft Corporation'),
+            Instrument('AMZN', 'Amazon.com, Inc.'),
+            Instrument('TSLA', 'Tesla, Inc.'),
+        ]
+        mock_sample.return_value = [inst.symbol for inst in mock_instruments]
+
+        # Update market prices for the new instruments
+        market.prices.update({
+            'MSFT': 300.0,
+            'AMZN': 3300.0,
+            'TSLA': 700.0,
+        })
+
+        trader = t.MonkeyTrader(market, portfolio)
+
+        # Call rebalance
+        trader.rebalance()
+
+        # Assertions
+        assert len(portfolio.positions) == 3  # New positions for MSFT, AMZN, TSLA
+        assert all(pos.instrument in mock_instruments for pos in portfolio.positions)
+        assert all(pos.instrument not in initial_positions for pos in portfolio.positions)
