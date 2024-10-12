@@ -4,45 +4,10 @@ import TradeTimeline from '@/app/ui/timeline'
 import Portfolio from '@/app/ui/portfolio'
 import { Separator } from '@/components/ui/separator'
 import Header from './ui/header'
-
-export const dynamic = 'force-dynamic'
-
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
-const getPortfolios = async (): Promise<PortfolioData> => {
-    const res = await fetch(`${baseUrl}/api/portfolios`, {
-        cache: 'no-store',
-    });
-    if (!res.ok) {
-        throw new Error('Failed to fetch portfolios');
-    }
-    return res.json();
-};
-
-const getTrades = async () => {
-    const res = await fetch(`${baseUrl}/api/trades`, {
-       cache: 'no-store',
-    });
-    if (!res.ok) {
-        throw new Error('Failed to fetch trades');
-    }
-    return res.json();
-};
-
-const getValuations = async (): Promise<ValuationData> => {
-    const res = await fetch(`${baseUrl}/api/valuations`, {
-        cache: 'no-store',
-    });
-    if (!res.ok) {
-        throw new Error('Failed to fetch valuations');
-    }
-    return res.json();
-};
+import { getPortfolios, getValuations, getTrades, getBenchmark } from './lib/api'
 
 export default async function Home() {
-  const portfolios = await getPortfolios();
-  const valuations = await getValuations();
-  const trades = await getTrades();
+  const [portfolios, valuations, trades, benchmark] = await Promise.all([getPortfolios(), getValuations(), getTrades(), getBenchmark()]);
 
   const latestMonkeyValuation = valuations.monkeyValuations[valuations.monkeyValuations.length - 1]
   const latestChatGptValuation = valuations.chatGptValuations[valuations.chatGptValuations.length - 1]
@@ -79,7 +44,7 @@ export default async function Home() {
         <Separator className="my-4" />
         <section className="flex flex-col justify-center">
           <h2 className="text-2xl font-semibold mb-4">Historical Performance</h2>
-          {valuations && <PortfolioChart valuations={valuations} />}
+          {valuations && benchmark && <PortfolioChart valuations={valuations} benchmark={benchmark} />}
         </section>
         <Separator />
         <section className="mb-12 flex flex-col justify-center">

@@ -56,3 +56,12 @@ type ValuationData = {
     monkeyValuations: Valuation[];
     chatGptValuations: Valuation[];
 };
+
+type StockData = {
+    date: string;
+    high: number;
+    volume: number;
+    open: number;
+    low: number;
+    close: number;
+};

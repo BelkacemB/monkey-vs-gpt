@@ -6,7 +6,6 @@ import { getDbClient } from "@/app/lib/db";
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-    console.log(`Getting portfolios from API at ${new Date().toISOString()}`);
     const chatGptPortfolio = await getDbClient().send(new GetItemCommand({
         TableName: "TradingTable",
         Key: {

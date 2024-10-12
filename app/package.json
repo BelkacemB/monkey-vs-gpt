@@ -27,7 +27,8 @@
     "react-dom": "^18",
     "react-scroll-parallax": "^3.4.5",
     "tailwind-merge": "^2.5.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "yahoo-finance2": "^2.13.2"
   },
   "devDependencies": {
     "@types/node": "^20",
