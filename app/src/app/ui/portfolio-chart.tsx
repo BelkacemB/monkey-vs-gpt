@@ -43,6 +43,7 @@ export default function PortfolioChart({ valuations, benchmark }: { valuations: 
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false, // Allow the chart to adjust its height
     plugins: {
       legend: {
         position: 'top' as const,
@@ -56,6 +57,11 @@ export default function PortfolioChart({ valuations, benchmark }: { valuations: 
       x: {
         grid: {
           color: 'rgba(0, 0, 0, 0.1)',
+        },
+        ticks: {
+          maxRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 6, // Limit the number of x-axis labels on smaller screens
         },
       },
       y: {
@@ -73,7 +79,9 @@ export default function PortfolioChart({ valuations, benchmark }: { valuations: 
 
   return (
     <div className="p-4 rounded-lg shadow-lg md:mx-16">
-      <Line options={options} data={data} />
+      <div className="h-[300px] md:h-[400px]"> {/* Set a fixed height for the chart container */}
+        <Line options={options} data={data} />
+      </div>
     </div>
   );
 }
