@@ -1,6 +1,8 @@
 import yahooFinance from "yahoo-finance2";
 import { NextResponse } from 'next/server';
 
+export const revalidate = 3600; // Revalidate every hour (3600 seconds)
+
 export async function GET() {
     console.log('Fetching S&P 500 data...');
 

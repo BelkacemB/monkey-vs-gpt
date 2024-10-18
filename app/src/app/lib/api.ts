@@ -32,7 +32,7 @@ export const getValuations = async (): Promise<ValuationData> => {
 
 export const getBenchmark = async (): Promise<StockData[]> => {
   const res = await fetch(`${baseUrl}/api/benchmark`, {
-      next: { revalidate: 0 },
+      next: { revalidate: 3600 }, // Revalidate every hour (3600 seconds)
   });
   if (!res.ok) {
       throw new Error('Failed to fetch S&P 500 valuations');
